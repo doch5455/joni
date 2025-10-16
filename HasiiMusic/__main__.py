@@ -48,7 +48,7 @@ async def init():
     for all_module in ALL_MODULES:
         importlib.import_module("Tune.plugins" + all_module)
 
-    LOGGER("Tune.plugins").info("ᴛᴜɴᴇ's ᴍᴏᴅᴜʟᴇs ʟᴏᴀᴅᴇᴅ...")
+    LOGGER("HasiiMusic.plugins").info("ᴛᴜɴᴇ's ᴍᴏᴅᴜʟᴇs ʟᴏᴀᴅᴇᴅ...")
     await userbot.start()
     await JARVIS.start()
 
