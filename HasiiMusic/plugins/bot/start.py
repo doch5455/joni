@@ -4,16 +4,16 @@ import time
 from pyrogram import filters
 from pyrogram.enums import ChatType
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
-from py_yt  import VideosSearch
+from py_yt import VideosSearch
 
 import config
 from config import BANNED_USERS, HELP_IMG_URL, START_VIDS, STICKERS
 from strings import get_string
-from HasiiMusic import app
-from HasiiMusic.misc import _boot_
-from HasiiMusic.plugins.sudo.sudoers import sudoers_list
-from HasiiMusic.utils import bot_sys_stats
-from HasiiMusic.utils.database import (
+from Tune import app
+from Tune.misc import _boot_
+from Tune.plugins.sudo.sudoers import sudoers_list
+from Tune.utils import bot_sys_stats
+from Tune.utils.database import (
     add_served_chat,
     add_served_user,
     blacklisted_chats,
@@ -23,15 +23,16 @@ from HasiiMusic.utils.database import (
     is_banned_user,
     is_on_off,
 )
-from HasiiMusic.utils.decorators.language import LanguageStart
-from HasiiMusic.utils.formatters import get_readable_time
-from HasiiMusic.utils.inline import private_panel, start_panel
-from HasiiMusic.utils.inline.help import help_keyboard
+from Tune.utils.decorators.language import LanguageStart
+from Tune.utils.formatters import get_readable_time
+from Tune.utils.inline import private_panel, start_panel
+from Tune.utils.inline.help import help_keyboard
 
 
 async def delete_sticker_after_delay(message, delay):
     await asyncio.sleep(delay)
     await message.delete()
+
 
 @app.on_message(filters.command(["start"]) & filters.private & ~BANNED_USERS)
 @LanguageStart
@@ -74,7 +75,8 @@ async def start_pm(client, message: Message, _):
                 [
                     [
                         InlineKeyboardButton(text=_["S_B_6"], url=link),
-                        InlineKeyboardButton(text=_["S_B_4"], url=config.SUPPORT_CHAT),
+                        InlineKeyboardButton(
+                            text=_["S_B_4"], url=config.SUPPORT_CHAT),
                     ]
                 ]
             )
@@ -110,6 +112,7 @@ async def start_pm(client, message: Message, _):
                 text=f"{message.from_user.mention} ᴊᴜsᴛ sᴛᴀʀᴛᴇᴅ ᴛʜᴇ ʙᴏᴛ.\n\n<b>ᴜsᴇʀ ɪᴅ :</b> <code>{message.from_user.id}</code>\n<b>ᴜsᴇʀɴᴀᴍᴇ :</b> @{message.from_user.username}",
             )
 
+
 @app.on_message(filters.command(["start"]) & filters.group & ~BANNED_USERS)
 @LanguageStart
 async def start_gp(client, message: Message, _):
@@ -118,12 +121,14 @@ async def start_gp(client, message: Message, _):
     try:
         await message.reply_video(
             random.choice(START_VIDS),
-            caption=_["start_1"].format(app.mention, get_readable_time(uptime)),
+            caption=_["start_1"].format(
+                app.mention, get_readable_time(uptime)),
             reply_markup=InlineKeyboardMarkup(out),
         )
     except:
-        pass    
+        pass
     return await add_served_chat(message.chat.id)
+
 
 @app.on_message(filters.new_chat_members, group=-1)
 async def welcome(client, message: Message):

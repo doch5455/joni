@@ -3,11 +3,11 @@ from pyrogram.types import (
     InlineKeyboardMarkup,
     InlineQueryResultPhoto,
 )
-from py_yt  import VideosSearch
+from py_yt import VideosSearch
 
-from HasiiMusic.utils.inlinequery import answer
+from Tune.utils.inlinequery import answer
 from config import BANNED_USERS
-from HasiiMusic import app
+from Tune import app
 
 
 @app.on_inline_query(~BANNED_USERS)
