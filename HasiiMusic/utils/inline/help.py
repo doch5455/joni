@@ -1,10 +1,12 @@
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from HasiiMusic import app
 
+
 def help_keyboard(_):
     buttons = []
-    for i in range(1, 16):
-        if (i - 1) % 3 == 0:
+    # 🔹 Sadece 4 başlık gösterilir (H_B_1 - H_B_4)
+    for i in range(1, 5):
+        if (i - 1) % 2 == 0:  # 2'şer buton yan yana, daha düzenli görünüm
             buttons.append([])
         buttons[-1].append(
             InlineKeyboardButton(
@@ -12,12 +14,14 @@ def help_keyboard(_):
                 callback_data=f"help_callback hb{i}"
             )
         )
+
+    # 🔹 En alt satırda Menü ve Kapat butonları
     buttons.append(
         [
             InlineKeyboardButton(
-                text="๏ ᴍᴇɴᴜ ๏", 
-                callback_data="back_to_main"),
-                
+                text="🌊 Menü",
+                callback_data="back_to_main"
+            ),
             InlineKeyboardButton(
                 text=_["CLOSE_BUTTON"],
                 callback_data="close"
@@ -25,7 +29,6 @@ def help_keyboard(_):
         ]
     )
     return InlineKeyboardMarkup(buttons)
-
 
 
 def help_back_markup(_):
