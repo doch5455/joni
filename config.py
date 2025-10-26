@@ -95,28 +95,28 @@ STRING5 = getenv("STRING_SESSION5")
 
 # ───── Bot Media Assets ───── #
 START_VIDS = [
-    "https://files.catbox.moe/c3nt3q.mp4",
-    "https://files.catbox.moe/0g8sfl.mp4",
-    "https://files.catbox.moe/v0izu5.mp4"
+    "",
+    "",
+    ""
 ]
 
 STICKERS = [
     "CAACAgUAAx0Cd6nKUAACASBl_rnalOle6g7qS-ry-aZ1ZpVEnwACgg8AAizLEFfI5wfykoCR4h4E",
     "CAACAgUAAx0Cd6nKUAACATJl_rsEJOsaaPSYGhU7bo7iEwL8AAPMDgACu2PYV8Vb8aT4_HUPHgQ"
 ]
-HELP_IMG_URL = "https://files.catbox.moe/139oue.png"
-PING_VID_URL = "https://files.catbox.moe/xn7qae.png"
-PLAYLIST_IMG_URL = "https://files.catbox.moe/isq0xv.png"
-STATS_VID_URL = "https://files.catbox.moe/fcdh4j.png"
-TELEGRAM_AUDIO_URL = "https://files.catbox.moe/wal0ys.png"
-TELEGRAM_VIDEO_URL = "https://files.catbox.moe/q06uki.png"
-STREAM_IMG_URL = "https://files.catbox.moe/q8j61o.png"
-SOUNCLOUD_IMG_URL = "https://files.catbox.moe/000ozd.png"
-YOUTUBE_IMG_URL = "https://files.catbox.moe/rt7nxl.png"
-SPOTIFY_ARTIST_IMG_URL = "https://files.catbox.moe/5zitrm.png"
-SPOTIFY_ALBUM_IMG_URL = "https://files.catbox.moe/5zitrm.png"
-SPOTIFY_PLAYLIST_IMG_URL = "https://files.catbox.moe/5zitrm.png"
-FAILED = "https://files.catbox.moe/rt7nxl.png"
+HELP_IMG_URL = ""
+PING_VID_URL = ""
+PLAYLIST_IMG_URL = ""
+STATS_VID_URL = ""
+TELEGRAM_AUDIO_URL = ""
+TELEGRAM_VIDEO_URL = ""
+STREAM_IMG_URL = ""
+SOUNCLOUD_IMG_URL = ""
+YOUTUBE_IMG_URL = ""
+SPOTIFY_ARTIST_IMG_URL = ""
+SPOTIFY_ALBUM_IMG_URL = ""
+SPOTIFY_PLAYLIST_IMG_URL = ""
+FAILED = ""
 
 
 # ───── Utility & Functional ───── #
