@@ -1,14 +1,14 @@
 HELP_1 = """
 <b><u>🎧 Temel Müzik Komutları</u></b>
 
-• /play [şarkı adı veya link] — Şarkı oynatır.  
-• /vplay [video adı veya link] — Video oynatır.  
-• /pause — Şarkıyı duraklatır.  
-• /resume — Şarkıyı devam ettirir.  
-• /skip — Sonraki şarkıya geçer.  
-• /stop — Çalmayı tamamen durdurur.  
-• /queue — Sıradaki parçaları gösterir.  
-• /loop [1-10] — Aynı şarkıyı tekrarlatır.
+• /oynat [şarkı adı veya link] — Şarkı oynatır.  
+• /voynat [video adı veya link] — Video oynatır.  
+• /dur — Şarkıyı duraklatır.  
+• /devam — Şarkıyı devam ettirir.  
+• /atla — Sonraki şarkıya geçer.  
+• /dur — Çalmayı tamamen durdurur.  
+• /kuyruk — Sıradaki parçaları gösterir.  
+• /dongu [1-10] — Aynı şarkıyı tekrarlatır.
 """
 
 HELP_2 = """
