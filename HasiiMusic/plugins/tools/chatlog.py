@@ -8,12 +8,12 @@ from typing import Optional
 from config import LOGGER_ID
 from HasiiMusic import app
 
-BOT_INFO: Optional[types.User] = None
+BOT_BILGI: Optional[types.User] = None
 BOT_ID: Optional[int] = None
 
-PHOTOS = "https://files.catbox.moe/139oue.png"
+FOTO = "https://files.catbox.moe/139oue.png"
 
-def _is_valid_url(url: Optional[str]) -> bool:
+def _gecerli_url(url: Optional[str]) -> bool:
     if not url:
         return False
     try:
@@ -22,119 +22,117 @@ def _is_valid_url(url: Optional[str]) -> bool:
     except Exception:
         return False
 
-async def _ensure_bot_info() -> None:
-    global BOT_INFO, BOT_ID
-    if BOT_INFO is None:
+async def _bot_bilgisi_al() -> None:
+    global BOT_BILGI, BOT_ID
+    if BOT_BILGI is None:
         try:
-            BOT_INFO = await app.get_me()
-            BOT_ID = BOT_INFO.id
+            BOT_BILGI = await app.get_me()
+            BOT_ID = BOT_BILGI.id
         except Exception as e:
-            print(f"Failed to get bot info: {e}")
+            print(f"Bot bilgisi alınamadı: {e}")
 
-async def safe_send_photo(chat_id, photo, caption, reply_markup=None, max_retries=3):
-    for attempt in range(max_retries):
+async def guvenli_foto_gonder(chat_id, foto, yazi, tuslar=None, deneme=3):
+    for sayac in range(deneme):
         try:
             return await app.send_photo(
                 chat_id=chat_id,
-                photo=photo,
-                caption=caption,
-                reply_markup=reply_markup
+                photo=foto,
+                caption=yazi,
+                reply_markup=tuslar
             )
         except errors.FloodWait as e:
             await asyncio.sleep(e.value + 1)
         except errors.ButtonUrlInvalid:
             return await app.send_photo(
                 chat_id=chat_id,
-                photo=photo,
-                caption=caption
+                photo=foto,
+                caption=yazi
             )
         except Exception as e:
-            if attempt == max_retries - 1:
+            if sayac == deneme - 1:
                 raise
             await asyncio.sleep(1)
 
 @app.on_message(filters.new_chat_members)
-async def join_watcher(_, message: Message):
+async def gruba_eklenme(_, message: Message):
     try:
-        await _ensure_bot_info()
-        if BOT_INFO is None or BOT_ID is None:
+        await _bot_bilgisi_al()
+        if BOT_BILGI is None or BOT_ID is None:
             return
 
         chat = message.chat
         try:
-            invite_link = await app.export_chat_invite_link(chat.id)
+            davet_linki = await app.export_chat_invite_link(chat.id)
         except Exception:
-            invite_link = None
+            davet_linki = None
 
-        for member in message.new_chat_members:
-            if member.id != BOT_ID:
+        for uye in message.new_chat_members:
+            if uye.id != BOT_ID:
                 continue
 
-            member_count = "?"
+            uye_sayisi = "?"
             try:
-                member_count = await app.get_chat_members_count(chat.id)
+                uye_sayisi = await app.get_chat_members_count(chat.id)
             except errors.FloodWait as fw:
                 await asyncio.sleep(fw.value + 1)
-                member_count = await app.get_chat_members_count(chat.id)
+                uye_sayisi = await app.get_chat_members_count(chat.id)
             except Exception:
                 pass
 
-            caption = (
-                "📝 **ᴍᴜsɪᴄ ʙᴏᴛ ᴀᴅᴅᴇᴅ ɪɴ ᴀ ɴᴇᴡ ɢʀᴏᴜᴘ**\n\n"
+            yazi = (
+                "🎶 **Yeni Bir Gruba Eklendim!**\n\n"
                 "❅─────✧❅✦❅✧─────❅\n\n"
-                f"📌 **ᴄʜᴀᴛ ɴᴀᴍᴇ:** `{chat.title}`\n"
-                f"🍂 **ᴄʜᴀᴛ ɪᴅ:** `{chat.id}`\n"
-                f"🔐 **ᴄʜᴀᴛ ᴜsᴇʀɴᴀᴍᴇ:** @{chat.username if chat.username else 'Private'}\n"
-                f"🛰 **ᴄʜᴀᴛ ʟɪɴᴋ:** [ᴄʟɪᴄᴋ ʜᴇʀᴇ]({invite_link or 'https://t.me/'})\n"
-                f"📈 **ɢʀᴏᴜᴘ ᴍᴇᴍʙᴇʀs:** `{member_count}`\n"
-                f"🤔 **ᴀᴅᴅᴇᴅ ʙʏ:** {message.from_user.mention if message.from_user else 'Unknown'}"
+                f"📍 **Grup Adı:** `{chat.title}`\n"
+                f"🆔 **Grup ID:** `{chat.id}`\n"
+                f"👥 **Üye Sayısı:** `{uye_sayisi}`\n"
+                f"🔗 **Davet Linki:** [Tıkla]({davet_linki or 'https://t.me/'})\n"
+                f"👤 **Ekleyen:** {message.from_user.mention if message.from_user else 'Bilinmiyor'}"
             )
 
-            reply_markup = None
-            if _is_valid_url(invite_link):
-                reply_markup = InlineKeyboardMarkup(
-                    [[InlineKeyboardButton("sᴇᴇ ɢʀᴏᴜᴘ 👀", url=invite_link.strip())]]
+            tuslar = None
+            if _gecerli_url(davet_linki):
+                tuslar = InlineKeyboardMarkup(
+                    [[InlineKeyboardButton("👀 Gruba Git", url=davet_linki.strip())]]
                 )
 
-            await safe_send_photo(
+            await guvenli_foto_gonder(
                 LOGGER_ID,
-                photo=PHOTOS,
-                caption=caption,
-                reply_markup=reply_markup
+                foto=FOTO,
+                yazi=yazi,
+                tuslar=tuslar
             )
     except Exception as e:
-        pass
-    
+        print(f"Gruba eklenme logu gönderilemedi: {e}")
+
 @app.on_message(filters.left_chat_member)
-async def on_left_chat_member(_, message: Message):
+async def gruptan_cikma(_, message: Message):
     try:
-        await _ensure_bot_info()
-        if BOT_INFO is None or BOT_ID is None:
+        await _bot_bilgisi_al()
+        if BOT_BILGI is None or BOT_ID is None:
             return
 
         if message.left_chat_member.id != BOT_ID:
             return
 
-        remover = message.from_user.mention if message.from_user else "**ᴜɴᴋɴᴏᴡɴ ᴜsᴇʀ**"
+        kaldiran = message.from_user.mention if message.from_user else "**Bilinmeyen Kullanıcı**"
         chat = message.chat
 
-        text = (
-            "✫ **<u>#ʟᴇғᴛ_ɢʀᴏᴜᴘ</u>** ✫\n\n"
-            f"📌 **ᴄʜᴀᴛ ɴᴀᴍᴇ:** `{chat.title}`\n"
-            f"🆔 **ᴄʜᴀᴛ ɪᴅ:** `{chat.id}`\n"
-            f"👤 **ʀᴇᴍᴏᴠᴇᴅ ʙʏ:** {remover}\n"
-            f"🤖 **ʙᴏᴛ:** @{BOT_INFO.username}"
+        metin = (
+            "📤 **Bot Bir Gruptan Çıkarıldı!**\n\n"
+            f"📍 **Grup Adı:** `{chat.title}`\n"
+            f"🆔 **Grup ID:** `{chat.id}`\n"
+            f"👤 **Kaldıran:** {kaldiran}\n"
+            f"🤖 **Bot:** @{BOT_BILGI.username}"
         )
 
-        max_retries = 3
-        for attempt in range(max_retries):
+        for deneme in range(3):
             try:
-                await app.send_message(LOGGER_ID, text)
+                await app.send_message(LOGGER_ID, metin)
                 break
             except errors.FloodWait as e:
                 await asyncio.sleep(e.value + 1)
             except Exception as e:
-                if attempt == max_retries - 1:
-                    print(f"Failed to send left chat message after {max_retries} attempts: {e}")
+                if deneme == 2:
+                    print(f"Çıkış mesajı gönderilemedi: {e}")
     except Exception as e:
-        pass
+        print(f"Gruptan çıkış işlemi hatası: {e}")
