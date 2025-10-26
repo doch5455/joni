@@ -25,7 +25,7 @@ def generate_progress_bar(played_sec, duration_sec):
     return "▰" * filled + "▱" * (bar_length - filled)
 
 
-# 🔷 Sadece kapatma ve Maviduyuru butonları
+# 🔷 Kapatma ve 💙 𝐊𝐚𝐧𝐚𝐥 (kalın yazı, URL) butonları
 def stream_markup_timer(_, chat_id, played, dur):
     if not should_update_progress(chat_id):
         return None
@@ -38,7 +38,7 @@ def stream_markup_timer(_, chat_id, played, dur):
         [InlineKeyboardButton(text=f"{played} {bar} {dur}", callback_data="GetTimer")],
         [
             InlineKeyboardButton(text=_["CLOSE_BUTTON"], callback_data="close"),
-            InlineKeyboardButton(text="💙 kanal", callback_data="Maviduyuru"),
+            InlineKeyboardButton(text="💙 𝐊𝐚𝐧𝐚𝐥", url="https://t.me/MaviDuyuru"),
         ],
     ]
 
@@ -47,7 +47,7 @@ def stream_markup(_, chat_id):
     return [
         [
             InlineKeyboardButton(text=_["CLOSE_BUTTON"], callback_data="close"),
-            InlineKeyboardButton(text="💙 kanal", callback_data="Maviduyuru"),
+            InlineKeyboardButton(text="💙 𝐊𝐚𝐧𝐚𝐥", url="https://t.me/MaviDuyuru"),
         ]
     ]
 
@@ -66,7 +66,7 @@ def track_markup(_, videoid, user_id, channel, fplay):
         ],
         [
             InlineKeyboardButton(text=_["CLOSE_BUTTON"], callback_data=f"forceclose {videoid}|{user_id}"),
-            InlineKeyboardButton(text="💙 kanal", callback_data="Maviduyuru"),
+            InlineKeyboardButton(text="💙 𝐊𝐚𝐧𝐚𝐥", url="https://t.me/MaviDuyuru"),
         ],
     ]
 
@@ -85,7 +85,7 @@ def playlist_markup(_, videoid, user_id, ptype, channel, fplay):
         ],
         [
             InlineKeyboardButton(text=_["CLOSE_BUTTON"], callback_data=f"forceclose {videoid}|{user_id}"),
-            InlineKeyboardButton(text="💙 kanal", callback_data="Maviduyuru"),
+            InlineKeyboardButton(text="💙 𝐊𝐚𝐧𝐚𝐥", url="https://t.me/MaviDuyuru"),
         ],
     ]
 
@@ -100,7 +100,7 @@ def livestream_markup(_, videoid, user_id, mode, channel, fplay):
         ],
         [
             InlineKeyboardButton(text=_["CLOSE_BUTTON"], callback_data=f"forceclose {videoid}|{user_id}"),
-            InlineKeyboardButton(text="💙 kanal", callback_data="Maviduyuru"),
+            InlineKeyboardButton(text="💙 𝐊𝐚𝐧𝐚𝐥", url="https://t.me/MaviDuyuru"),
         ],
     ]
 
@@ -120,6 +120,6 @@ def slider_markup(_, videoid, user_id, query, query_type, channel, fplay):
         ],
         [
             InlineKeyboardButton(text=_["CLOSE_BUTTON"], callback_data=f"forceclose {short_query}|{user_id}"),
-            InlineKeyboardButton(text="💙 kanal", callback_data="Maviduyuru"),
+            InlineKeyboardButton(text="💙 𝐊𝐚𝐧𝐚𝐥", url="https://t.me/MaviDuyuru"),
         ],
     ]
