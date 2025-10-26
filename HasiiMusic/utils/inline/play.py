@@ -38,7 +38,7 @@ def stream_markup_timer(_, chat_id, played, dur):
         [InlineKeyboardButton(text=f"{played} {bar} {dur}", callback_data="GetTimer")],
         [
             InlineKeyboardButton(text=_["CLOSE_BUTTON"], callback_data="close"),
-            InlineKeyboardButton(text="💙 Mavi Duyuru", url="https://t.me/MaviDuyuru"),
+            InlineKeyboardButton(text="💙 Mavi Duyuru", url="@MaviDuyuru"),
         ],
     ]
 
@@ -66,7 +66,7 @@ def track_markup(_, videoid, user_id, channel, fplay):
         ],
         [
             InlineKeyboardButton(text=_["CLOSE_BUTTON"], callback_data=f"forceclose {videoid}|{user_id}"),
-            InlineKeyboardButton(text="💙 Mavi Duyuru", url="https://t.me/MaviDuyuru"),
+            InlineKeyboardButton(text="💙 Mavi Duyuru", url="@MaviDuyuru"),
         ],
     ]
 
@@ -85,7 +85,7 @@ def playlist_markup(_, videoid, user_id, ptype, channel, fplay):
         ],
         [
             InlineKeyboardButton(text=_["CLOSE_BUTTON"], callback_data=f"forceclose {videoid}|{user_id}"),
-            InlineKeyboardButton(text="💙 Mavi Duyuru", url="https://t.me/MaviDuyuru"),
+            InlineKeyboardButton(text="💙 Mavi Duyuru", url="@MaviDuyuru"),
         ],
     ]
 
@@ -100,7 +100,7 @@ def livestream_markup(_, videoid, user_id, mode, channel, fplay):
         ],
         [
             InlineKeyboardButton(text=_["CLOSE_BUTTON"], callback_data=f"forceclose {videoid}|{user_id}"),
-            InlineKeyboardButton(text="💙 Mavi Duyuru", url="https://t.me/MaviDuyuru"),
+            InlineKeyboardButton(text="💙 Mavi Duyuru", url="@MaviDuyuru"),
         ],
     ]
 
@@ -120,6 +120,6 @@ def slider_markup(_, videoid, user_id, query, query_type, channel, fplay):
         ],
         [
             InlineKeyboardButton(text=_["CLOSE_BUTTON"], callback_data=f"forceclose {short_query}|{user_id}"),
-            InlineKeyboardButton(text="💙 Mavi Duyuru", url="https://t.me/MaviDuyuru"),
+            InlineKeyboardButton(text="💙 Mavi Duyuru", url="@MaviDuyuru"),
         ],
     ]
