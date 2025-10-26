@@ -1,7 +1,7 @@
 from pyrogram.enums import ParseMode
-
 from HasiiMusic import app
 from HasiiMusic.utils.database import is_on_off
+from HasiiMusic.utils.database.memorydatabase import get_active_chats  # aktif sohbetleri saymak için
 from config import LOGGER_ID
 
 
@@ -13,27 +13,33 @@ async def play_logs(message, streamtype, query: str = None):
             except Exception:
                 query = "—"
 
-        logger_text = f"""
-<b>{app.mention} ᴘʟᴀʏ ʟᴏɢ</b>
+        # 🔹 Aktif sesli sohbet sayısı alınır
+        try:
+            active_chats = await get_active_chats()
+            active_count = len(active_chats)
+        except Exception:
+            active_count = 0
 
-<b>ᴄʜᴀᴛ ɪᴅ :</b> <code>{message.chat.id}</code>
-<b>ᴄʜᴀᴛ ɴᴀᴍᴇ :</b> {message.chat.title}
-<b>ᴄʜᴀᴛ ᴜsᴇʀɴᴀᴍᴇ :</b> @{message.chat.username}
+        log_text = f"""
+<b>🎧 {app.mention} - Oynatma Kaydı</b>
 
-<b>ᴜsᴇʀ ɪᴅ :</b> <code>{message.from_user.id}</code>
-<b>ɴᴀᴍᴇ :</b> {message.from_user.mention}
-<b>ᴜsᴇʀɴᴀᴍᴇ :</b> @{message.from_user.username}
+<b>📍 Sohbet Adı:</b> {message.chat.title}
+<b>🆔 Sohbet ID:</b> <code>{message.chat.id}</code>
+<b>👤 Kullanıcı:</b> {message.from_user.mention}
+<b>🔎 Arama:</b> {query}
+<b>🎬 Tür:</b> {streamtype}
 
-<b>ǫᴜᴇʀʏ :</b> {query}
-<b>sᴛʀᴇᴀᴍᴛʏᴘᴇ :</b> {streamtype}"""
+<b>📡 Aktif Sesli Sohbet Sayısı:</b> <code>{active_count}</code>
+"""
+
+        # Sadece log grubundan farklıysa gönder
         if message.chat.id != LOGGER_ID:
             try:
                 await app.send_message(
                     chat_id=LOGGER_ID,
-                    text=logger_text,
+                    text=log_text,
                     parse_mode=ParseMode.HTML,
                     disable_web_page_preview=True,
                 )
-            except:
-                pass
-        return
+            except Exception as e:
+                print(f"Log gönderilemedi: {e}")
