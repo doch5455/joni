@@ -47,7 +47,7 @@ def stream_markup(_, chat_id):
     return [
         [
             InlineKeyboardButton(text=_["CLOSE_BUTTON"], callback_data="close"),
-            InlineKeyboardButton(text="💙 Mavi Duyuru", url="https://t.me/MaviDuyuru"),
+            InlineKeyboardButton(text="💙 Mavi Duyuru", url="@maviduyuru"),
         ]
     ]
 
