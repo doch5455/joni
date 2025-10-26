@@ -1,6 +1,8 @@
 import re
 from os import getenv
 from dotenv import load_dotenv
+from typing import Iterable, Iterator, Set
+
 from pyrogram import filters
 
 # Load environment variables from .env file
@@ -109,7 +111,89 @@ DURATION_LIMIT = time_to_seconds(f"{DURATION_LIMIT_MIN}:00")
 AYU = ["💞", "🦋", "🔍", "🧪", "⚡️", "🎩", "🍷", "🥂", "🕊️", "🪄", "🧨"]
 
 # ───── Runtime Structures ───── #
-BANNED_USERS = filters.user()
+class BannedUsersManager:
+    """Manage banned user IDs while exposing a Pyrogram filter."""
+
+    def __init__(self) -> None:
+        self._ids: Set[int] = set()
+
+        def _checker(_, __, update) -> bool:
+            user = getattr(update, "from_user", None)
+            return bool(user and user.id in self._ids)
+
+        self._filter = filters.create(_checker, name="banned_users")
+
+    @staticmethod
+    def _normalize(user_id: object) -> int:
+        if isinstance(user_id, bool):  # bool is a subclass of int; reject explicitly
+            raise ValueError("Boolean values are not valid user IDs")
+        try:
+            return int(user_id)
+        except (TypeError, ValueError) as exc:
+            raise ValueError(f"Invalid user ID: {user_id!r}") from exc
+
+    def add(self, user_id: object) -> bool:
+        normalized = self._normalize(user_id)
+        if normalized in self._ids:
+            return False
+        self._ids.add(normalized)
+        return True
+
+    def remove(self, user_id: object) -> bool:
+        normalized = self._normalize(user_id)
+        if normalized not in self._ids:
+            return False
+        self._ids.remove(normalized)
+        return True
+
+    def discard(self, user_id: object) -> None:
+        try:
+            normalized = self._normalize(user_id)
+        except ValueError:
+            return None
+        self._ids.discard(normalized)
+
+    def update(self, user_ids: Iterable[object]) -> None:
+        for user_id in user_ids:
+            try:
+                self.add(user_id)
+            except ValueError:
+                continue
+
+    def clear(self) -> None:
+        self._ids.clear()
+
+    def snapshot(self) -> Set[int]:
+        return set(self._ids)
+
+    def __contains__(self, user_id: object) -> bool:  # type: ignore[override]
+        try:
+            normalized = self._normalize(user_id)
+        except ValueError:
+            return False
+        return normalized in self._ids
+
+    def __len__(self) -> int:
+        return len(self._ids)
+
+    def __iter__(self) -> Iterator[int]:
+        return iter(self.snapshot())
+
+    def __bool__(self) -> bool:
+        return bool(self._ids)
+
+    def __invert__(self):
+        return ~self._filter
+
+    def __repr__(self) -> str:
+        return f"BannedUsersManager(total={len(self)})"
+
+    @property
+    def filter(self):
+        return self._filter
+
+
+BANNED_USERS = BannedUsersManager()
 adminlist, lyrical, votemode, autoclean, confirmer = {}, {}, {}, [], {}
 
 # ── Minimal validation ─────────────────────────────────────────────────────────
