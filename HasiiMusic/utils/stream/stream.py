@@ -496,7 +496,7 @@ class Call:
         if config.STRING5:
             await self.five.start()
 
-        @capture_internal_err
+    @capture_internal_err
     async def ping(self) -> str:
         pings = []
         if config.STRING1:
