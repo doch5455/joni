@@ -31,7 +31,7 @@ from HasiiMusic.utils.exceptions import AssistantErr
 from HasiiMusic.utils.formatters import check_duration, seconds_to_min, speed_converter
 from HasiiMusic.utils.inline.play import stream_markup
 from HasiiMusic.utils.stream.autoclear import auto_clean
-from HasiiMusic.utils.thumbnails import get_thumb
+
 from HasiiMusic.utils.errors import capture_internal_err, send_large_error
 
 autoend = {}
@@ -197,7 +197,7 @@ class Call:
     @capture_internal_err
     async def speedup_stream(self, chat_id: int, file_path: str, speed: float, playing: list) -> None:
         if not isinstance(playing, list) or not playing or not isinstance(playing[0], dict):
-            raise AssistantErr("Invalid stream info for speedup.")
+            raise AssistantErr("Hızlandırma için geçersiz yayın bilgisi.")
 
         assistant = await group_assistant(self, chat_id)
         base = os.path.basename(file_path)
@@ -221,7 +221,7 @@ class Call:
         if chat_id in db and db[chat_id] and db[chat_id][0].get("file") == file_path:
             await assistant.play(chat_id, stream)
         else:
-            raise AssistantErr("Stream mismatch during speedup.")
+            raise AssistantErr("Hızlandırma sırasında yayın uyuşmazlığı.")
 
         db[chat_id][0].update({
             "played": con_seconds,
@@ -233,18 +233,31 @@ class Call:
             "old_second": db[chat_id][0].get("seconds"),
         })
 
-
+    # DÜZENLENEN KISIM BURASI
     @capture_internal_err
     async def stream_call(self, link: str) -> None:
         assistant = await group_assistant(self, config.LOGGER_ID)
         try:
             await assistant.play(config.LOGGER_ID, MediaStream(link))
             await asyncio.sleep(8)
+        except NoActiveGroupCall:
+            LOGGER(__name__).error(
+                f"Asistan, {config.LOGGER_ID} log kanalında oynatmaya çalıştı ancak aktif bir sesli sohbet yok."
+            )
+        except TelegramServerError:
+            LOGGER(__name__).error(
+                f"Asistan, {config.LOGGER_ID} log kanalına bağlanırken bir Telegram sunucu hatası aldı."
+            )
+        except Exception as e:
+            LOGGER(__name__).error(
+                f"Log kanalında ({config.LOGGER_ID}) stream_call sırasında bilinmeyen hata: {e}"
+            )
         finally:
             try:
                 await assistant.leave_call(config.LOGGER_ID)
             except:
                 pass
+    # DÜZENLEME BİTTİ
 
     @capture_internal_err
     async def join_call(
@@ -268,7 +281,7 @@ class Call:
             raise AssistantErr(_["call_10"])
         except Exception as e:
             raise AssistantErr(
-                f"ᴜɴᴀʙʟᴇ ᴛᴏ ᴊᴏɪɴ ᴛʜᴇ ɢʀᴏᴜᴘ ᴄᴀʟʟ.\nRᴇᴀsᴏɴ: {e}"
+                f"Grup aramasına katılamadı.\nNeden: {e}"
             )
         self.active_calls.add(chat_id)
         await add_active_chat(chat_id)
@@ -344,14 +357,12 @@ class Call:
                 except Exception:
                     return await app.send_message(original_chat_id, text=_["call_6"])
 
-                img = await get_thumb(videoid)
                 button = stream_markup(_, chat_id)
-                run = await app.send_photo(
+                run = await app.send_message(
                     chat_id=original_chat_id,
-                    photo=img,
-                    caption=_["stream_1"].format(
+                    text=_["stream_1"].format(
                         f"https://t.me/{app.username}?start=info_{videoid}",
-                        title[:23],
+                        title,
                         check[0]["dur"],
                         user,
                     ),
@@ -380,15 +391,13 @@ class Call:
                 except:
                     return await app.send_message(original_chat_id, text=_["call_6"])
 
-                img = await get_thumb(videoid)
                 button = stream_markup(_, chat_id)
                 await mystic.delete()
-                run = await app.send_photo(
+                run = await app.send_message(
                     chat_id=original_chat_id,
-                    photo=img,
-                    caption=_["stream_1"].format(
+                    text=_["stream_1"].format(
                         f"https://t.me/{app.username}?start=info_{videoid}",
-                        title[:23],
+                        title,
                         check[0]["dur"],
                         user,
                     ),
@@ -405,10 +414,9 @@ class Call:
                     return await app.send_message(original_chat_id, text=_["call_6"])
 
                 button = stream_markup(_, chat_id)
-                run = await app.send_photo(
+                run = await app.send_message(
                     chat_id=original_chat_id,
-                    photo=config.STREAM_IMG_URL,
-                    caption=_["stream_2"].format(user),
+                    text=_["stream_2"].format(user),
                     reply_markup=InlineKeyboardMarkup(button),
                 )
                 db[chat_id][0]["mystic"] = run
@@ -423,15 +431,10 @@ class Call:
 
                 if videoid == "telegram":
                     button = stream_markup(_, chat_id)
-                    run = await app.send_photo(
+                    run = await app.send_message(
                         chat_id=original_chat_id,
-                        photo=(
-                            config.TELEGRAM_AUDIO_URL
-                            if str(streamtype) == "audio"
-                            else config.TELEGRAM_VIDEO_URL
-                        ),
-                        caption=_["stream_1"].format(
-                            config.SUPPORT_CHAT, title[:23], check[0]["dur"], user
+                        text=_["stream_1"].format(
+                            config.SUPPORT_CHAT, title, check[0]["dur"], user
                         ),
                         reply_markup=InlineKeyboardMarkup(button),
                     )
@@ -440,11 +443,10 @@ class Call:
 
                 elif videoid == "soundcloud":
                     button = stream_markup(_, chat_id)
-                    run = await app.send_photo(
+                    run = await app.send_message(
                         chat_id=original_chat_id,
-                        photo=config.SOUNCLOUD_IMG_URL,
-                        caption=_["stream_1"].format(
-                            config.SUPPORT_CHAT, title[:23], check[0]["dur"], user
+                        text=_["stream_1"].format(
+                            config.SUPPORT_CHAT, title, check[0]["dur"], user
                         ),
                         reply_markup=InlineKeyboardMarkup(button),
                     )
@@ -452,29 +454,26 @@ class Call:
                     db[chat_id][0]["markup"] = "tg"
 
                 else:
-                    img = await get_thumb(videoid)
                     button = stream_markup(_, chat_id)
                     try:
-                        run = await app.send_photo(
+                        run = await app.send_message(
                             chat_id=original_chat_id,
-                            photo=img,
-                            caption=_["stream_1"].format(
+                            text=_["stream_1"].format(
                                 f"https://t.me/{app.username}?start=info_{videoid}",
-                                title[:23],
+                                title,
                                 check[0]["dur"],
                                 user,
                             ),
                             reply_markup=InlineKeyboardMarkup(button),
                         )
                     except FloodWait as e:
-                        LOGGER(__name__).warning(f"FloodWait: Sleeping for {e.value}")
+                        LOGGER(__name__).warning(f"FloodWait: {e.value} saniye bekleniyor")
                         await asyncio.sleep(e.value)
-                        run = await app.send_photo(
+                        run = await app.send_message(
                             chat_id=original_chat_id,
-                            photo=img,
-                            caption=_["stream_1"].format(
+                            text=_["stream_1"].format(
                                 f"https://t.me/{app.username}?start=info_{videoid}",
-                                title[:23],
+                                title,
                                 check[0]["dur"],
                                 user,
                             ),
@@ -485,7 +484,7 @@ class Call:
 
 
     async def start(self) -> None:
-        LOGGER(__name__).info("Starting PyTgCalls Clients...")
+        LOGGER(__name__).info("PyTgCalls İstemcileri Başlatılıyor...")
         if config.STRING1:
             await self.one.start()
         if config.STRING2:
@@ -542,11 +541,11 @@ class Call:
                 exc_type, exc_obj, exc_tb = sys.exc_info()
                 full_trace = "".join(traceback.format_exception(exc_type, exc_obj, exc_tb))
                 caption = (
-                    f"🚨 <b>Stream Update Error</b>\n"
-                    f"📍 <b>Update Type:</b> <code>{type(update).__name__}</code>\n"
-                    f"📍 <b>Error Type:</b> <code>{exc_type.__name__}</code>"
+                    f"🚨 <b>Yayın Güncelleme Hatası</b>\n"
+                    f"📍 <b>Güncelleme Türü:</b> <code>{type(update).__name__}</code>\n"
+                    f"📍 <b>Hata Türü:</b> <code>{exc_type.__name__}</code>"
                 )
-                filename = f"update_error_{getattr(update, 'chat_id', 'unknown')}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+                filename = f"guncelleme_hatasi_{getattr(update, 'chat_id', 'bilinmeyen')}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
                 await send_large_error(full_trace, caption, filename)
 
         for assistant in assistants:
