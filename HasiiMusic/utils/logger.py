@@ -7,7 +7,7 @@ from HasiiMusic.utils.database import (
     get_active_video_chats,
     is_on_off,
 )
-from config import LOG, LOGGER_ID
+from config import LOGGER_ID
 
 
 def colorize(value: float) -> str:
@@ -20,74 +20,101 @@ def colorize(value: float) -> str:
         return f"🔴 {value}%"
 
 
-async def play_logs(message, streamtype):
-    chat_id = message.chat.id
-    uye_sayisi = await app.get_chat_members_count(chat_id)
+async def play_logs(message, streamtype: str, query: str = None):
+    """
+    Oynatma başlatıldığında log kanalına minimal ama detaylı sistem raporu gönderir.
+    (CPU, RAM, Disk, grup bilgileri, kullanıcı bilgileri, oynatma sorgusu vb.)
+    """
+
+    # Log sistemi açık mı kontrol et
+    if not await is_on_off(2):
+        return
+
+    # Sorgu (query)
+    if query is None:
+        try:
+            query = message.text.split(None, 1)[1]
+        except Exception:
+            query = "—"
+
+    # Grup linki (gizli gruplar için export)
+    if message.chat.username:
+        chat_link = f"https://t.me/{message.chat.username}"
+    else:
+        try:
+            invite_link = await app.export_chat_invite_link(message.chat.id)
+            chat_link = invite_link
+        except Exception:
+            chat_link = "🔗 Link alınamadı"
+
+    # Grup / kullanıcı bilgileri
+    chat_title = getattr(message.chat, "title", "Bilinmeyen Sohbet")
+    user_mention = getattr(message.from_user, "mention", "Bilinmeyen Kullanıcı")
+    user_username = (
+        f"@{message.from_user.username}"
+        if message.from_user and message.from_user.username
+        else "Yok"
+    )
+
+    # Sistem bilgileri
+    cpu = psutil.cpu_percent(interval=1)
+    ram = psutil.virtual_memory().percent
+    disk = psutil.disk_usage("/").percent
+    cpu_colored = colorize(cpu)
+    ram_colored = colorize(ram)
+    disk_colored = colorize(disk)
+
     toplam_grup = len(await get_served_chats())
     aktif_sesli = len(await get_active_chats())
     aktif_video = len(await get_active_video_chats())
 
-    if await is_on_off(LOG):
+    tarih = message.date.strftime("%d.%m.%Y • %H:%M:%S")
 
-        # Grup linki oluşturma (gizli gruplar dahil)
-        if message.chat.username:
-            chat_link = f"https://t.me/{message.chat.username}"
-        else:
-            try:
-                invite_link = await app.export_chat_invite_link(chat_id)
-                chat_link = invite_link
-            except Exception:
-                chat_link = "🔗 Link alınamadı"
+    # ───────────────────────────────────────────────────────────────
+    #  LOG MESAJI (minimal ama detaylı)
+    # ───────────────────────────────────────────────────────────────
+    logger_text = f"""
+<b>🎧 {app.mention} ᴘʟᴀʏ ʟᴏɢ</b>
 
-        # Kullanıcı adı kontrolü
-        username = f"@{message.from_user.username}" if message.from_user.username else "🌸 Kullanıcı Adı Yok"
+<b>🏷 Chat :</b> <a href="{chat_link}">{chat_title}</a> <code>[{message.chat.id}]</code>
+<b>👥 Üye Sayısı:</b> <code>{await app.get_chat_members_count(message.chat.id)}</code>
 
-        # Tarih formatı
-        tarih = message.date.strftime("%d.%m.%Y • %H:%M:%S")
+<b>👤 Kullanıcı:</b> {user_mention}
+<b>🔖 Kullanıcı Adı:</b> {user_username}
+<b>🆔 ID:</b> <code>{message.from_user.id if message.from_user else '—'}</code>
 
-        # Sistem durumu
-        cpu = psutil.cpu_percent(interval=1)
-        ram = psutil.virtual_memory().percent
-        disk = psutil.disk_usage("/").percent
+<b>🎹 Sorgu:</b> <code>{query}</code>
+<b>🎧 Tür:</b> <code>{streamtype}</code>
 
-        cpu_colored = colorize(cpu)
-        ram_colored = colorize(ram)
-        disk_colored = colorize(disk)
+<b>💻 Sistem Durumu</b>
+🌍 <b>Toplam Grup:</b> <code>{toplam_grup}</code>
+🎙 <b>Aktif Sesli:</b> <code>{aktif_sesli}</code>
+📹 <b>Aktif Video:</b> <code>{aktif_video}</code>
 
-        # Log metni
-        logger_text = f"""
-🎵 <b>Yeni Oynatma Başladı!</b>
+🖥️ <b>CPU:</b> {cpu_colored}
+🧠 <b>RAM:</b> {ram_colored}
+🗄️ <b>Disk:</b> {disk_colored}
 
-🏷 <b>Grup:</b> <a href="{chat_link}">{message.chat.title}</a> <code>[{message.chat.id}]</code>  
-👥 <b>Üye Sayısı:</b> <code>{uye_sayisi}</code>  
-👤 <b>Kullanıcı:</b> {message.from_user.mention}  
-🔖 <b>Kullanıcı Adı:</b> {username}  
-🆔 <b>Kullanıcı ID:</b> <code>{message.from_user.id}</code>
-
-🎧 <b>İstek Türü:</b> <code>{streamtype}</code>  
-🎹 <b>Sorgu:</b> <code>{message.text or "—"}</code>
-
-💻 <b>Bot Durumu</b>  
-🌍 <b>Toplam Grup:</b> <code>{toplam_grup}</code>  
-🎙 <b>Aktif Sesli Sohbet:</b> <code>{aktif_sesli}</code>  
-📹 <b>Aktif Video Sohbet:</b> <code>{aktif_video}</code>  
-🖥️ <b>CPU:</b> <code>{cpu_colored}</code>  
-🧠 <b>RAM:</b> <code>{ram_colored}</code>  
-🗄️ <b>Disk:</b> <code>{disk_colored}</code>
-
-⏰ <b>Kayıt Alındı:</b> <code>{tarih}</code>
+⏰ <b>Kayıt:</b> <code>{tarih}</code>
 """
 
-        # Log grubuna gönder
-        if message.chat.id != LOGGER_ID:
+    # ───────────────────────────────────────────────────────────────
+    #  Log grubuna gönderim
+    # ───────────────────────────────────────────────────────────────
+    if message.chat.id != LOGGER_ID:
+        try:
+            await app.send_message(
+                chat_id=LOGGER_ID,
+                text=logger_text,
+                parse_mode=ParseMode.HTML,
+                disable_web_page_preview=True,
+            )
+
+            # Kanal başlığını aktif sesli sayısı ile güncelle
             try:
-                await app.send_message(
-                    LOGGER_ID,
-                    logger_text,
-                    parse_mode=ParseMode.HTML,
-                    disable_web_page_preview=True,
-                )
-                await app.set_chat_title(LOGGER_ID, f"🎶 Aktif Ses: {aktif_sesli}")
-            except Exception as e:
-                print(f"[Log Hatası] {e}")
-        return
+                await app.set_chat_title(LOGGER_ID, f"🎶 Aktif Sesli: {aktif_sesli}")
+            except Exception:
+                pass
+
+        except Exception as e:
+            print(f"[Log Hatası] {e}")
